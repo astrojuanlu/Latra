@@ -55,7 +55,7 @@ func discoverTUIInventory(project, cacheRoot string, resolver source.StoreResolv
 		return tuiInventory{}, fmt.Errorf("%s is an SDK directory, not a Workshop project", absolute)
 	}
 	if cacheRoot == "" {
-		cacheRoot = sdkcache.DefaultRoot
+		cacheRoot = sdkcache.DefaultRoot()
 	}
 	entries := make([]tuiSDK, 0, len(result.SDKs))
 	for _, s := range result.SDKs {

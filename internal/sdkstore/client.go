@@ -27,9 +27,11 @@ import (
 
 const (
 	DefaultServerURL = "https://api.pkg.store"
-	DefaultCacheDir  = sdkcache.DefaultRoot
 	maxArchiveBytes  = int64(256 << 20)
 )
+
+// DefaultCacheDir is the default SDK cache directory for the Store client.
+var DefaultCacheDir = sdkcache.DefaultRoot()
 
 // Config configures the Store client. Its zero value uses production defaults.
 type Config struct {

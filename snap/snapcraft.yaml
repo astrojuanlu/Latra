@@ -1,0 +1,70 @@
+name: latra
+base: core26
+adopt-info: latra
+summary: Static analysis tool for Canonical Workshop SDKs
+description: |
+  Latra inventories and analyzes the hooks of Canonical Workshop SDKs
+  without executing them, helping you decide what deserves a closer
+  look before an SDK is composed into a Workshop environment.
+
+  Findings cover sensitive data exposure, remote content execution,
+  project file changes, persistent behavior, and privileged or
+  hard-to-analyze code paths, each with source locations where
+  available. Results can be explored in an interactive terminal UI or
+  exported as JSON for local tooling and CI.
+
+  Review priority indicates where to investigate first; it does not
+  mean an SDK is malicious. Latra performs static analysis without
+  executing hooks, so findings describe detected behavior or potential
+  data flows, not proof that an action occurred.
+
+  Latra runs on the host and never executes inside a Workshop: it
+  reads project definitions, SDK metadata, and hooks from the local
+  filesystem and the SDK Store cache.
+license: MIT
+confinement: strict
+grade: stable
+
+plugs:
+  network:
+    interface: network
+  home:
+    interface: home
+title: Latra
+website: https://github.com/shizuku198411/Latra
+contact: https://github.com/shizuku198411/Latra/issues
+issues: https://github.com/shizuku198411/Latra/issues
+source-code: https://github.com/shizuku198411/Latra
+
+apps:
+  latra:
+    command: bin/latra
+
+parts:
+  latra:
+    plugin: go
+    source: .
+    build-snaps:
+      - go/latest/stable
+    # Required to read the version
+    build-packages:
+      - git
+    override-build: |
+      craftctl default
+      # Version, commit, and build date are computed here rather than in
+      # override-pull: the managed instance bind-mounts this repository
+      # (including .git) at $SNAPCRAFT_PROJECT_DIR only once the build
+      # environment is running, not during the pull step. Files carry the
+      # host user's uid, so the inline safe.directory config prevents
+      # git's "dubious ownership" refusal. Setting the version here still
+      # feeds both the pack filename and the stamped buildinfo.
+      version="$(git -c safe.directory='*' -C "$SNAPCRAFT_PROJECT_DIR" describe --long --tags --always --match 'v*.*.*' 2>/dev/null || true)"
+      test -n "$version" || version="0.0.0-untagged"
+      version="$(printf '%s' "$version" | sed 's/^v//')"
+      craftctl set version="$version"
+      commit="$(git -c safe.directory='*' -C "$SNAPCRAFT_PROJECT_DIR" rev-parse --short=12 HEAD 2>/dev/null || true)"
+      test -n "$commit" || commit="unknown"
+      ldflags="-X github.com/shizuku198411/Latra/internal/buildinfo.Version=$version"
+      ldflags="$ldflags -X github.com/shizuku198411/Latra/internal/buildinfo.Commit=$commit"
+      ldflags="$ldflags -X github.com/shizuku198411/Latra/internal/buildinfo.BuildDate=$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+      go build -trimpath -ldflags "$ldflags" -o "$SNAPCRAFT_PART_INSTALL/bin/latra" ./cmd/latra

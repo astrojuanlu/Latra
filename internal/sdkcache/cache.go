@@ -16,7 +16,16 @@ import (
 	"github.com/shizuku198411/Latra/internal/sdk"
 )
 
-const DefaultRoot = "/tmp/latra/cache"
+// DefaultRoot returns the default SDK cache directory.
+func DefaultRoot() string {
+	if dir := os.Getenv("XDG_CACHE_HOME"); dir != "" {
+		return filepath.Join(dir, "latra", "cache")
+	}
+	if dir := os.Getenv("SNAP_USER_COMMON"); dir != "" {
+		return filepath.Join(dir, "cache")
+	}
+	return filepath.Join(os.TempDir(), "latra", "cache")
+}
 
 // Selection narrows a cached SDK by channel and revision.
 type Selection struct {
