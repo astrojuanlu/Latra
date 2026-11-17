@@ -273,3 +273,23 @@ func writeFile(t *testing.T, name, content string) {
 		t.Fatal(err)
 	}
 }
+
+func TestDefaultRootFollowsXDGCacheHome(t *testing.T) {
+	xdg := filepath.Join(t.TempDir(), "xdg")
+	t.Setenv("XDG_CACHE_HOME", xdg)
+	got := sdkcache.DefaultRoot()
+	want := filepath.Join(xdg, "latra", "cache")
+	if got != want {
+		t.Fatalf("DefaultRoot with XDG_CACHE_HOME: got %q, want %q", got, want)
+	}
+}
+
+func TestDefaultRootFallsBackToTempWithoutXDGCacheHome(t *testing.T) {
+	t.Setenv("XDG_CACHE_HOME", "")
+	t.Setenv("SNAP_USER_COMMON", "")
+	got := sdkcache.DefaultRoot()
+	want := filepath.Join(os.TempDir(), "latra", "cache")
+	if got != want {
+		t.Fatalf("DefaultRoot without XDG_CACHE_HOME: got %q, want %q", got, want)
+	}
+}

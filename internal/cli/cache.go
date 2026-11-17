@@ -29,7 +29,7 @@ func runCache(args []string, stdout, stderr io.Writer, dependencies Dependencies
 	}
 	cacheRoot := dependencies.CacheRoot
 	if cacheRoot == "" {
-		cacheRoot = sdkcache.DefaultRoot
+		cacheRoot = sdkcache.DefaultRoot()
 	}
 	if options.all {
 		count, err := sdkcache.RemoveAll(cacheRoot)
@@ -70,7 +70,7 @@ func runCache(args []string, stdout, stderr io.Writer, dependencies Dependencies
 func runCacheList(stdout, stderr io.Writer, dependencies Dependencies) int {
 	cacheRoot := dependencies.CacheRoot
 	if cacheRoot == "" {
-		cacheRoot = sdkcache.DefaultRoot
+		cacheRoot = sdkcache.DefaultRoot()
 	}
 	entries, err := sdkcache.List(cacheRoot)
 	if err != nil {

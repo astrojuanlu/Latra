@@ -27,7 +27,7 @@ const (
 // Run executes the command using the supplied streams and returns a process exit code.
 // User-facing command output is written to stdout. Diagnostics are written to stderr.
 func Run(args []string, stdout, stderr io.Writer) int {
-	dependencies := Dependencies{CacheRoot: sdkcache.DefaultRoot}
+	dependencies := Dependencies{CacheRoot: sdkcache.DefaultRoot()}
 	if len(args) > 0 && (args[0] == "scan" || args[0] == "explorer") {
 		store, err := sdkstore.NewClient(sdkstore.Config{})
 		if err != nil {

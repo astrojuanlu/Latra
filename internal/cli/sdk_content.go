@@ -141,7 +141,7 @@ func parseContentOptions(command, targetName string, args []string) (contentOpti
 func resolveContentSDK(dependencies Dependencies, options contentOptions) (sdkcache.Entry, error) {
 	cacheRoot := dependencies.CacheRoot
 	if cacheRoot == "" {
-		cacheRoot = sdkcache.DefaultRoot
+		cacheRoot = sdkcache.DefaultRoot()
 	}
 	if options.channel != "" {
 		return sdkcache.Resolve(cacheRoot, sdkcache.Selection{

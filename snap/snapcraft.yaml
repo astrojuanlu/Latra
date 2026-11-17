@@ -22,8 +22,14 @@ description: |
   reads project definitions, SDK metadata, and hooks from the local
   filesystem and the SDK Store cache.
 license: MIT
-confinement: classic
+confinement: strict
 grade: stable
+
+plugs:
+  network:
+    interface: network
+  home:
+    interface: home
 title: Latra
 website: https://github.com/shizuku198411/Latra
 contact: https://github.com/shizuku198411/Latra/issues
