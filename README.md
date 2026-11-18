@@ -34,15 +34,19 @@ Latra analyzes SDK hooks for behavior and data flows that may deserve review, in
 
 ### Install
 
-Build and install from a checkout of this repository. The installer requires Canonical Workshop and builds Latra in the project's development Workshop:
+(recommended method) Install using snap:
+
+```bash
+sudo snap install latra
+```
+
+Or build and install from a checkout of this repository. The installer requires Canonical Workshop and builds Latra in the project's development Workshop:
 
 ```bash
 git clone https://github.com/shizuku198411/Latra.git
 cd Latra
 ./scripts/install.sh
 ```
-
-By default, the binary is installed to `~/.local/bin`; add that directory to your `PATH` if needed. Set `LATRA_INSTALL_DIR` to choose another installation directory. To remove it, run `./scripts/uninstall.sh` from the checkout, using the same `LATRA_INSTALL_DIR` if you set one.
 
 ### Open a Workshop project
 
