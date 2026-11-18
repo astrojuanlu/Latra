@@ -107,7 +107,13 @@ func readProject(ctx context.Context, projectPath string, limits sdk.Limits, res
 			return nil, fmt.Errorf("%s: %w", relative, err)
 		}
 
+		var actions []Action
+		for name, script := range definition.Actions {
+			actions = append(actions, Action{Name: name, Script: script})
+		}
+		sort.Slice(actions, func(i, j int) bool { return actions[i].Name < actions[j].Name })
 		result.Workshops = append(result.Workshops, Workshop{
+			Actions:    actions,
 			Name:       definition.Name,
 			Base:       definition.Base,
 			Runtime:    definition.Runtime,

@@ -104,7 +104,7 @@ func TestTUIUncachedSDKShowsInterfaces(t *testing.T) {
 	model.enter()
 	model.move(1)
 	model.enter()
-	if model.Preview == nil || !model.Preview.Interface || !strings.Contains(strings.Join(model.Preview.Lines, " "), "Workshop: dev") {
+	if model.Preview == nil || model.Preview.DetailKind != "Interface" || !strings.Contains(strings.Join(model.Preview.Lines, " "), "Workshop: dev") {
 		t.Fatalf("interface preview: %+v", model.Preview)
 	}
 	model.back()
@@ -725,5 +725,42 @@ func TestTUIInventoryRootWorkshopDefinition(t *testing.T) {
 				t.Fatalf("unexpected inventory: %+v", inventory)
 			}
 		})
+	}
+}
+
+func TestWorkshopActionsFromInventoryToPreview(t *testing.T) {
+	root := t.TempDir()
+	dir := filepath.Join(root, ".workshop")
+	if err := os.Mkdir(dir, 0700); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"dev", "review"} {
+		data := "name: " + name + "\nbase: ubuntu@24.04\nactions:\n  test: |\n    echo " + name + "\n    go test \"$@\"\n  build: go build\n"
+		if err := os.WriteFile(filepath.Join(dir, name+".yaml"), []byte(data), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	inventory, err := discoverTUIInventory(root, t.TempDir(), nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(inventory.Configurations) != 2 {
+		t.Fatalf("configurations: %+v", inventory.Configurations)
+	}
+	m := tuiExplorer{Configurations: inventory.Configurations, Workshops: inventory.Workshops}
+	for i, c := range m.Configurations {
+		m.openWorkshop(i)
+		selectTUIKind(t, &m, "workshop-actions")
+		m.enter()
+		if len(m.Nodes) != 2 || m.Nodes[0].Name != "build" || m.Nodes[1].Name != "test" {
+			t.Fatalf("actions: %+v", m.Nodes)
+		}
+		m.SelectedNode = 1
+		m.enter()
+		want := "Run     workshop run " + c.Name + " -- test\nSource  " + c.Definition + "\n\necho " + c.Name + "\ngo test \"$@\"\n"
+		if m.Preview == nil || strings.Join(m.Preview.Lines, "\n") != want {
+			t.Fatalf("%s preview: %+v", c.Name, m.Preview)
+		}
+		m.back()
 	}
 }
