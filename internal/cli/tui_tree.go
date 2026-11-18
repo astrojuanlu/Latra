@@ -33,6 +33,7 @@ type tuiNode struct {
 	Children            []tuiNode
 	Edge                *interfacegraph.Edge
 	Review              *interfaceexposure.Item
+	Action              *source.Action
 	SlotRef             string
 	SlotBasis           string
 	CandidateUnselected bool
@@ -117,6 +118,17 @@ func (m *tuiExplorer) enter() {
 	case "workshop-system":
 		m.openSystem(node.Index)
 		return
+	case "workshop-actions":
+		m.show(node.Children, interfaceview.Safe(" Workshop: "+m.Configurations[m.CurrentWorkshop].Name+"  ›  Actions"))
+		return
+	case "workshop-action":
+		c := m.Configurations[m.CurrentWorkshop]
+		lines := []string{"Run     workshop run " + interfaceview.Safe(c.Name) + " -- " + node.Name, "Source  " + interfaceview.Safe(c.Definition), ""}
+		for _, line := range strings.Split(node.Action.Script, "\n") {
+			lines = append(lines, interfaceview.Safe(strings.ReplaceAll(line, "\t", "    ")))
+		}
+		m.Preview = &tuiPreview{DetailKind: "Action", Path: node.Name, Status: "Workshop action (read-only)", Lines: lines}
+		return
 	case "workshop-interfaces":
 		m.openWorkshopInterfaces()
 		return
@@ -139,7 +151,7 @@ func (m *tuiExplorer) enter() {
 		for n := range lines {
 			lines[n] = interfaceview.Safe(lines[n])
 		}
-		m.Preview = &tuiPreview{Path: "Interface details", Status: "Static candidates; runtime not inspected", Lines: lines, Interface: true}
+		m.Preview = &tuiPreview{Path: "Interface details", Status: "Static candidates; runtime not inspected", Lines: lines, DetailKind: "Interface"}
 		return
 	}
 	if node.Kind == "topology-edge" {
@@ -155,7 +167,7 @@ func (m *tuiExplorer) enter() {
 		for i := range lines {
 			lines[i] = interfaceview.Safe(lines[i])
 		}
-		m.Preview = &tuiPreview{Path: "Configured interface", Status: "Static configuration (read-only)", Lines: lines, Interface: true}
+		m.Preview = &tuiPreview{Path: "Configured interface", Status: "Static configuration (read-only)", Lines: lines, DetailKind: "Interface"}
 		return
 	}
 	if node.Kind == "interface" {
@@ -178,7 +190,7 @@ func (m *tuiExplorer) enter() {
 				}
 			}
 		}
-		m.Preview = &tuiPreview{Path: node.Interface.Name, Status: "Interface declaration (read-only)", Lines: lines, Interface: true}
+		m.Preview = &tuiPreview{Path: node.Interface.Name, Status: "Interface declaration (read-only)", Lines: lines, DetailKind: "Interface"}
 		m.Message = ""
 		return
 	}
@@ -380,14 +392,23 @@ func (m *tuiExplorer) openWorkshop(index int) {
 	if len(c.SDKs) == 0 {
 		nodes = append(nodes, tuiNode{Header: true, Name: "No SDKs declared"})
 	}
-	nodes = append(nodes, tuiNode{Header: true, Name: "[Configuration]"}, tuiNode{Kind: "workshop-interfaces", Name: "Interfaces  ›"}, tuiNode{Header: true, Name: "[Scan results]"}, tuiNode{Kind: "workshop-assessment", Name: "SDK assessment  ›"})
 	base := ""
+	var actions []tuiNode
 	for _, w := range m.Workshops {
 		if w.Definition == c.Definition {
 			base = w.Base
+			for i := range w.Actions {
+				action := &w.Actions[i]
+				actions = append(actions, tuiNode{Kind: "workshop-action", Name: interfaceview.Safe(action.Name), Action: action})
+			}
 			break
 		}
 	}
+	actionMenu := tuiNode{Name: "Actions (0)", Header: true}
+	if len(actions) > 0 {
+		actionMenu = tuiNode{Name: fmt.Sprintf("Actions (%d)  ›", len(actions)), Kind: "workshop-actions", Children: actions}
+	}
+	nodes = append(nodes, tuiNode{Header: true, Name: "[Configuration]"}, tuiNode{Kind: "workshop-interfaces", Name: "Interfaces  ›"}, actionMenu, tuiNode{Header: true, Name: "[Scan results]"}, tuiNode{Kind: "workshop-assessment", Name: "SDK assessment  ›"})
 	m.show(nodes, interfaceview.Safe(" Workshop: "+c.Name+"  ("+c.Definition+")  "+base))
 }
 func (m *tuiExplorer) openSystem(order int) {
@@ -502,7 +523,7 @@ func (m *tuiExplorer) openAssessment() {
 	if workshop {
 		status = "SDK assessments for this Workshop"
 	}
-	m.Preview = &tuiPreview{Path: "SDK assessment", Status: status, Lines: lines, Interface: true, Colored: color}
+	m.Preview = &tuiPreview{Path: "SDK assessment", Status: status, Lines: lines, DetailKind: "Assessment", Colored: color}
 }
 
 // Sanitize untrusted evidence before the report renderer adds its own ANSI colors.

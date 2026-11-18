@@ -11,12 +11,19 @@ const (
 	InputProjectSDK InputKind = "project-sdk"
 )
 
+// Action is a named shell script declared by a Workshop.
+type Action struct {
+	Name   string `json:"name"`
+	Script string `json:"script"`
+}
+
 // Workshop is a parsed Workshop definition.
 type Workshop struct {
-	Name       string `json:"name"`
-	Base       string `json:"base"`
-	Runtime    string `json:"runtime,omitempty"`
-	Definition string `json:"definition"`
+	Name       string   `json:"name"`
+	Base       string   `json:"base"`
+	Runtime    string   `json:"runtime,omitempty"`
+	Definition string   `json:"definition"`
+	Actions    []Action `json:"actions,omitempty"`
 }
 
 // Result is the resolved SDK source inventory returned before shell analysis.

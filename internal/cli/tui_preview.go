@@ -17,7 +17,7 @@ import (
 const maxTUIPreviewBytes = 1 << 20
 
 type tuiPreview struct {
-	Interface   bool
+	DetailKind  string
 	Colored     bool
 	Path        string
 	Status      string

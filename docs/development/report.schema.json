@@ -115,7 +115,19 @@
         "name": { "type": "string" },
         "base": { "type": "string" },
         "runtime": { "type": "string" },
-        "definition": { "type": "string" }
+        "definition": { "type": "string" },
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "script"],
+            "properties": {
+              "name": { "type": "string" },
+              "script": { "type": "string" }
+            }
+          }
+        }
       }
     },
     "summary": {

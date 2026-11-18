@@ -50,6 +50,15 @@ func WriteTextWithOptions(writer io.Writer, result *source.Result, options TextO
 			if _, err := fmt.Fprintf(writer, "  %s\n    Definition: %s\n    Base: %s\n", workshop.Name, workshop.Definition, workshop.Base); err != nil {
 				return err
 			}
+			if len(workshop.Actions) > 0 {
+				names := make([]string, 0, len(workshop.Actions))
+				for _, action := range workshop.Actions {
+					names = append(names, interfaceview.Safe(action.Name))
+				}
+				if _, err := fmt.Fprintln(writer, "    Actions:", strings.Join(names, ", ")); err != nil {
+					return err
+				}
+			}
 		}
 	}
 	if _, err := fmt.Fprintln(writer, "\nSDKs"); err != nil {

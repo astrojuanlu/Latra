@@ -115,10 +115,10 @@ func runTerminalExplorer(inventory tuiInventory, resolver source.StoreResolver) 
 		}
 		if model.Preview != nil {
 			var annotations map[int][]tuiRisk
-			if !model.Preview.Interface {
+			if model.Preview.DetailKind == "" {
 				annotations = risksForPreview(model.Scan, entries[model.SelectedSDK].Name, model.Preview.Path)
 			}
-			if model.Preview.Interface {
+			if model.Preview.DetailKind != "" {
 				for i := model.Preview.Scroll; i < len(model.Preview.Lines) && i < model.Preview.Scroll+available; i++ {
 					line := " " + model.Preview.Lines[i]
 					if model.Preview.Colored {
@@ -390,8 +390,8 @@ func tuiExplorerHeader(model *tuiExplorer) string {
 	var heading string
 	switch {
 	case model.Preview != nil:
-		if model.Preview.Interface {
-			heading = fmt.Sprintf(" Interface: %s  (read-only)", safeTUILabel(model.Preview.Path))
+		if model.Preview.DetailKind != "" {
+			heading = fmt.Sprintf(" %s: %s  (read-only)", model.Preview.DetailKind, safeTUILabel(model.Preview.Path))
 		} else {
 			heading = fmt.Sprintf(" File: %s  (read-only preview)", model.Preview.Path)
 		}
